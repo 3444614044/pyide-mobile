@@ -19,6 +19,7 @@ models/
 *.pte
 *.tflite
 _thumb_*.jpg
+_demo_*.onnx
 
 # 编辑器/系统
 .idea/
