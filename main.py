@@ -18,6 +18,9 @@ from kivy.uix.textinput import TextInput
 
 from codearea import CodeArea  # noqa: F401  (kv 里通过类名引用)
 from filetree import FileTree  # noqa: F401  (kv 里通过类名引用)
+import diag
+from pkgpanel import PackagePanel, PackagePopup  # noqa: F401  (kv 里通过类名引用)
+import packages
 from runner import MAX_LINES
 from workspace import Workspace
 
@@ -58,11 +61,15 @@ class PyIDEApp(App):
 
         self._buf = deque(maxlen=MAX_LINES)
         self._dirty = False
+        self._run_buf = []        # 本次运行的输出，结束后交给错误解释器
+        self._capturing = False
         self.current_path = None
 
         self.root_path = os.path.join(self.user_data_dir, "projects")
         self.ws = Workspace(self.root_path, say=self._say)
         self.ws.seed_samples(os.path.join(APP_DIR, "samples"))
+        self.ws.on_start = self._on_run_start
+        self.ws.on_finish = self._on_run_finish
         os.makedirs(os.path.join(self.root_path, "models"), exist_ok=True)  # 放模型
 
         # kv 里是类规则，load_file 只注册规则；实例化 RootUI 时才套用
@@ -85,7 +92,25 @@ class PyIDEApp(App):
     # ---------------- 输出面板 ----------------
     def _say(self, text):
         self._buf.append(text)
+        if self._capturing:
+            self._run_buf.append(text)
         self._dirty = True
+
+    # ---------------- 运行结束：自动挂诊断建议 ----------------
+    def _on_run_start(self):
+        self._run_buf = []
+        self._capturing = True
+
+    def _on_run_finish(self):
+        self._capturing = False
+        Clock.schedule_once(lambda *_: self._diagnose(), 0.05)
+
+    def _diagnose(self):
+        text = "".join(self._run_buf[-200:])   # 只看最后 200 行，别扫全历史
+        self._run_buf = []
+        advice = diag.explain(text)
+        if advice:
+            self._say("\n" + diag.format(advice, markup=True))
 
     def _flush(self, *_):
         if not self._dirty:
@@ -164,6 +189,22 @@ class PyIDEApp(App):
         self.ui.ids.code.text = ""
         self.ui.ids.fname.text = ""
         self.ui.ids.tree.refresh()
+
+    # ---------------- Quick Install（V3）----------------
+    def do_packages(self):
+        PackagePopup(on_install=self._install_package, say=self._say).open()
+
+    def pick_package(self, name):
+        self._say("$ %s\n" % packages.install_cmd(name))
+        self._install_package(name)
+
+    def _install_package(self, name):
+        def work():
+            rc = packages.install(name, on_line=self._say)
+            self._say("[pip exit %d]\n" % rc)
+
+        import threading
+        threading.Thread(target=work, daemon=True).start()
 
     def do_refresh(self):
         self.ui.ids.tree.refresh()
