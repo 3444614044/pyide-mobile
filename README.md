@@ -54,6 +54,8 @@
 | `jobs.py` | 后台长任务：进度原子落盘、被杀续跑、按电量节流、前台服务指路 |
 | `v4test.py` | V4 自检：布局 11 项 + 设备 13 项 + 任务 12 项 |
 | `samples/08_device_jobs.py` | 设备体检 + 布局演算 + 模拟"被杀后续跑" |
+| `devicecheck.py` | 真机验收自检：环境/依赖/延迟/AI通路/布局/后台，输出可复制报告 |
+| `CHECKLIST.md` | 真机人工验收清单（P0/P1/P2，自动化测不了的那部分） |
 
 ## 2. 安装命令
 
@@ -142,7 +144,21 @@ adb install -r bin/*.apk
 - onnxruntime 打进 APK 需要 p4a recipe；没有就走 .ptl / .pte 的 Java 路线。
 - 只出 `arm64-v8a`；不申请存储权限，全部写应用私有目录。
 
-## 8. 手机验证步骤
+## 8. 真机验收
+
+**先跑自动项**：
+
+```bash
+python devicecheck.py     # 输出可复制报告：环境/依赖/延迟/AI通路/布局/后台，含 P0/P1/P2 分级
+```
+
+能自动判的它都判了；触屏手感、旋屏观感、真模型延迟这类自动化测不了的，
+列在 `CHECKLIST.md` 里按 P0/P1/P2 逐条人工确认，每带失败判据。
+
+**顺序建议**：先在 Pydroid 3 上过一遍确认通路，再打包 APK。打包一次 20-40 分钟，
+通路没通就打包最浪费时间。
+
+## 9. 手机验证步骤
 
 1. **最快（不打包）**：Pydroid 3 打开 `main.py`，看三栏、点示例运行。
 2. **触屏**：跑 `samples/02_pygame_touch.py`，点中间按钮计数 +1、右上角 EXIT 退出。
@@ -154,11 +170,11 @@ adb install -r bin/*.apk
 8. **续跑**：跑 `samples/08_device_jobs.py`，看"模拟被杀后重启"能否从 60% 续到 100%。
 9. 把 `alltest.py` 拷到手机（Pydroid）跑一遍，五套应全 OK。
 
-## 9. 已知限制 / 失败回滚
+## 10. 已知限制 / 失败回滚
 
 - **无 root 不做的事**：不写 /system、不 sudo、不 apt。读写限制在应用私有目录，跨应用文件走 SAF（V4）。
 - **pygame recipe 编不过**：从 requirements 摘掉，示例只在 Pydroid / 桌面跑，别为它上全量 gcc。
 - **torch 不打包**：先在 PC 转 .onnx 或 .ptl。
 - **回滚**：`git checkout mvp` / `v0.2.0` / `v0.3.0` / `v0.4.0`；打包脏了 `buildozer android clean`，再不行删 `.buildozer`。
 
-当前自检：`alltest.py` 五套全 OK（uitest 8 项、v3test 27 项、v4test 36 项、aitest 11 项、8 个示例）。
+当前自检：`alltest.py` 六套全 OK（uitest 8 项、v3test 27 项、v4test 36 项、aitest 11 项、8 个示例、devicecheck 25 项自动通过 + 3 项待人工）。
