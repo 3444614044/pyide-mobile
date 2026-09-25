@@ -11,6 +11,7 @@ from runner import ScriptRunner
 
 SKIP_DIRS = {".git", "__pycache__", ".buildozer", "bin", ".gradle", ".idea"}
 SHOW_EXT = (".py", ".txt", ".md", ".json", ".csv", ".png", ".jpg", ".jpeg")
+MODEL_EXT = (".onnx", ".pt", ".ptl", ".pte", ".tflite", ".pth")
 
 
 def list_dir(root):
@@ -36,7 +37,7 @@ def list_dir(root):
         if os.path.isdir(full):
             if name not in SKIP_DIRS and not name.startswith("."):
                 dirs.append(name)
-        elif os.path.isfile(full) and name.lower().endswith(SHOW_EXT):
+        elif os.path.isfile(full) and name.lower().endswith(SHOW_EXT + MODEL_EXT):
             files.append(name)
     items += [{"kind": "dir", "name": n + "/", "path": os.path.join(root, n)} for n in dirs]
     items += [{"kind": "file", "name": n, "path": os.path.join(root, n)} for n in files]
