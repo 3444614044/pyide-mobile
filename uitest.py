@@ -12,6 +12,8 @@ import time
 
 os.environ.setdefault("SDL_VIDEODRIVER", "dummy")
 os.environ.setdefault("SDL_AUDIODRIVER", "dummy")
+os.environ.setdefault("KIVY_TEXT", "pil")      # 无 X 时用 PIL 文本后端
+os.environ.setdefault("KIVY_WINDOW", "sdl2")   # 别让它退到 x11 上去连 X server
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
@@ -61,10 +63,13 @@ kv_code = (
     "import os, sys\n"
     "sys.path.insert(0, %r)\n"
     "os.environ.setdefault('SDL_VIDEODRIVER', 'dummy')\n"
-    "import codearea, filetree\n"
+    "os.environ.setdefault('KIVY_TEXT', 'pil')\n"
+    "os.environ.setdefault('KIVY_WINDOW', 'sdl2')\n"
+    "import codearea, filetree, pkgpanel\n"
     "from kivy.lang import Builder\n"
     "from kivy.uix.boxlayout import BoxLayout\n"
     "class RootUI(BoxLayout): pass\n"
+    "from pkgpanel import PackageRow, PackagePanel\n"
     "Builder.load_file(%r)\n"
     "print('KV_OK')\n"
 ) % (HERE, os.path.join(HERE, "ui.kv"))
