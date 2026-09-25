@@ -63,6 +63,7 @@ class PyIDEApp(App):
         self.root_path = os.path.join(self.user_data_dir, "projects")
         self.ws = Workspace(self.root_path, say=self._say)
         self.ws.seed_samples(os.path.join(APP_DIR, "samples"))
+        os.makedirs(os.path.join(self.root_path, "models"), exist_ok=True)  # 放模型
 
         # kv 里是类规则，load_file 只注册规则；实例化 RootUI 时才套用
         Builder.load_file(os.path.join(APP_DIR, "ui.kv"))
@@ -100,7 +101,15 @@ class PyIDEApp(App):
             self.ui.ids.tree.path = path
             return
         if not path.lower().endswith(".py"):
-            self._say("! 只能编辑 .py（%s）\n" % os.path.basename(path))
+            ext = os.path.splitext(path)[1].lower()
+            if ext in (".onnx", ".pt", ".ptl", ".pte", ".tflite", ".pth"):
+                self._say(
+                    "%s 是模型文件，不能直接编辑。用法：\n"
+                    "  import ai_runtime\n"
+                    "  m = ai_runtime.load('%s')\n"
+                    "  m.predict_image(img, topk=3)\n" % (os.path.basename(path), path))
+            else:
+                self._say("! 只能编辑 .py（%s）\n" % os.path.basename(path))
             return
         try:
             self.ui.ids.code.text = self.ws.open_file(path)
