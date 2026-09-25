@@ -65,7 +65,7 @@ kv_code = (
     "os.environ.setdefault('SDL_VIDEODRIVER', 'dummy')\n"
     "os.environ.setdefault('KIVY_TEXT', 'pil')\n"
     "os.environ.setdefault('KIVY_WINDOW', 'sdl2')\n"
-    "import codearea, filetree, pkgpanel\n"
+    "import codearea, filetree, pkgpanel, screen\n"
     "from kivy.lang import Builder\n"
     "from kivy.uix.boxlayout import BoxLayout\n"
     "class RootUI(BoxLayout): pass\n"
