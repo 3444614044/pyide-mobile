@@ -8,7 +8,7 @@ import sys
 import os
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-SUITES = ["uitest.py", "v3test.py", "aitest.py", "selftest.py"]
+SUITES = ["uitest.py", "v3test.py", "v4test.py", "aitest.py", "selftest.py"]
 
 
 def main():
