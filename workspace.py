@@ -50,9 +50,14 @@ class Workspace:
         self.say = say or (lambda *_: None)
         self.current = None
         self.runner = ScriptRunner(on_line=self.say, on_state=self._on_state)
+        self.on_start = None   # 运行开始回调（UI 用来开诊断采集）
+        self.on_finish = None  # 运行结束回调（UI 用来挂错误解释）
 
     def _on_state(self, running):
         self.say("[%s]\n" % ("运行中" if running else "结束"))
+        cb = self.on_start if running else self.on_finish
+        if cb:
+            cb()
 
     @property
     def running(self):
