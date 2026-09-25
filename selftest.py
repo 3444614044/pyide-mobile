@@ -17,8 +17,10 @@ sys.path.insert(0, HERE)
 from runner import ScriptRunner, python_exe  # noqa: E402
 
 SCRIPTS = ["01_numpy_demo.py", "03_pil_thumb.py", "04_env_probe.py"]
+AI_SCRIPTS = ["05_ai_image.py", "06_ai_feature.py"]   # 缺 onnxruntime 时记 SKIP，不算失败
 GUI_SCRIPT = "02_pygame_touch.py"
 TIMEOUT = 60
+SKIPPED = []
 
 
 def run_capture(path, cwd, timeout=TIMEOUT):
@@ -49,10 +51,14 @@ def main():
     results = []
 
     workdir = tempfile.mkdtemp(prefix="pyide_selftest_")  # 示例脚本写文件只写这里
-    for name in SCRIPTS:
+    for name in SCRIPTS + AI_SCRIPTS:
         path = os.path.join(HERE, "samples", name)
         out, ok = run_capture(path, workdir)
         passed = ok and "\nOK" in out and "[exit 0]" in out
+        if not passed and name in AI_SCRIPTS and ("onnxruntime" in out or "onnx" in out):
+            SKIPPED.append(name)  # 环境没装后端，不算代码问题
+            print("\n=== %s ===\nSKIP（缺推理后端）" % name)
+            continue
         results.append((name, passed))
         print("\n=== %s ===\n%s" % (name, out.strip()[:800]))
 
@@ -80,6 +86,8 @@ def main():
     print("\n" + "=" * 40)
     for name, ok in results:
         print("%-22s %s" % (name, "PASS" if ok else "FAIL"))
+    for name in SKIPPED:
+        print("%-22s %s" % (name, "SKIP（缺 onnxruntime）"))
     return 0 if all(ok for _, ok in results) else 1
 
 
