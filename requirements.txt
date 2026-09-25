@@ -4,3 +4,7 @@ pygments>=2.12        # 语法高亮，缺失时自动退回原生 TextInput
 numpy>=1.24
 Pillow>=9.0
 pygame>=2.5           # 仅示例与桌面调试；APK 打包视 p4a recipe 可用性决定
+
+# V2 推理后端（Pydroid / 桌面）
+onnxruntime>=1.14    # ARM: 用官方 aarch64 wheel；APK 需要 p4a recipe
+onnx>=1.12           # tools/ 生成与量化迷你模型用
