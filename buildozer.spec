@@ -47,7 +47,7 @@ requirements = python3,kivy,numpy,Pillow
 # ---------------------------------------------------------------- V4：横竖屏
 # sensor = 跟随系统旋屏。注意：旋屏会重建窗口，布局必须按 dp 比例算，
 # 本项目用 screen.layout_for() 在 on_resize 里重算，不写死像素。
-orientation = sensor
+orientation = all
 # 只锁竖屏就改回 portrait；游戏类示例建议 portrait，编辑器建议 sensor。
 
 fullscreen = 0
