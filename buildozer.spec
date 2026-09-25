@@ -9,7 +9,7 @@
 [app]
 title = PyIDE Mobile
 package.name = pyidemobile
-package.domain = org.tinyide
+package.domain = org.tinypyide
 
 source.dir = .
 source.include_exts = py,png,jpg,kv,atlas,json,md,ttf
@@ -88,3 +88,4 @@ warn_on_root = 1
 # 构建脏了的处理顺序：
 #   buildozer android clean      # 先试这个
 #   rm -rf .buildozer            # 还不行就删缓存（下次全量重编，慢但干净）
+android.accept_sdk_license = True
