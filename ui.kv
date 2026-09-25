@@ -107,6 +107,11 @@
             font_size: '16sp'
             on_release: app.do_save()
         Button:
+            text: '📦'
+            size_hint_x: 0.3
+            font_size: '16sp'
+            on_release: app.do_packages()
+        Button:
             text: '↻'
             size_hint_x: 0.3
             font_size: '16sp'
@@ -169,3 +174,118 @@
                     OutLabel:
                         id: out
                         text: app.out_text
+
+# ---------------- V3：Quick Install 面板 ----------------
+<TagLabel@Label>:
+    size_hint_x: None
+    width: '58dp'
+    font_size: '9sp'
+    color: 0.06, 0.08, 0.12, 1
+    bold: True
+
+<PackageRow>:
+    spacing: '4dp'
+    padding: '4dp'
+    size_hint_y: None
+    height: '52dp'
+    canvas.before:
+        Color:
+            rgba: 0.13, 0.14, 0.18, 1
+        Rectangle:
+            pos: self.pos
+            size: self.size
+    BoxLayout:
+        orientation: 'vertical'
+        spacing: '1dp'
+        Label:
+            text: root.name
+            font_size: '13sp'
+            bold: True
+            halign: 'left'
+            text_size: self.width, None
+            shorten: True
+            shorten_from: 'right'
+            color: 0.93, 0.95, 0.99, 1
+        Label:
+            text: root.why
+            font_size: '10sp'
+            halign: 'left'
+            text_size: self.width, None
+            shorten: True
+            shorten_from: 'right'
+            color: 0.62, 0.66, 0.74, 1
+        Label:
+            text: root.note
+            font_size: '9sp'
+            halign: 'left'
+            text_size: self.width, None
+            shorten: True
+            shorten_from: 'right'
+            color: 0.52, 0.56, 0.64, 1
+    BoxLayout:
+        orientation: 'vertical'
+        size_hint_x: None
+        width: '86dp'
+        spacing: '2dp'
+        TagLabel:
+            text: root.tier
+            canvas.before:
+                Color:
+                    rgba: root.tier_color
+                Rectangle:
+                    pos: self.pos
+                    size: self.size
+        Button:
+            text: 'Install'
+            font_size: '11sp'
+            background_normal: ''
+            background_color: 0.18, 0.38, 0.28, 1
+            on_release: app.pick_package(root.name)
+
+<PackagePanel>:
+    orientation: 'vertical'
+    spacing: '4dp'
+    padding: '6dp'
+    canvas.before:
+        Color:
+            rgba: 0.08, 0.09, 0.12, 1
+        Rectangle:
+            pos: self.pos
+            size: self.size
+    BoxLayout:
+        size_hint_y: None
+        height: '32dp'
+        spacing: '4dp'
+        TextInput:
+            hint_text: '搜索包名（白名单内）'
+            multiline: False
+            font_size: '12sp'
+            background_color: 0.14, 0.15, 0.19, 1
+            foreground_color: 0.92, 0.94, 0.98, 1
+            padding: '6dp', '5dp'
+            on_text: root.query = self.text; root.refresh()
+        Label:
+            text: root.status
+            size_hint_x: None
+            width: '54dp'
+            font_size: '10sp'
+            color: 0.55, 0.6, 0.7, 1
+    RecycleView:
+        viewclass: 'PackageRow'
+        data: root.rows
+        bar_width: '4dp'
+        RecycleBoxLayout:
+            default_size: None, dp(52)
+            default_size_hint: 1, None
+            size_hint_y: None
+            height: self.minimum_height
+            orientation: 'vertical'
+            spacing: '3dp'
+    Label:
+        text: '绿=纯 Python｜蓝=已验证 ARM wheel｜红=实验（建议 PC 训练）'
+        size_hint_y: None
+        height: '22dp'
+        font_size: '9sp'
+        color: 0.5, 0.55, 0.65, 1
+        text_size: self.width, None
+        halign: 'left'
