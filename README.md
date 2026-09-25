@@ -5,6 +5,7 @@
 - **MVP**：Kivy 三栏 IDE（文件 / 编辑器 / 输出）+ 运行 .py + numpy / PIL / pygame 示例
 - **V2**：AI 运行器，`import ai_runtime` 做端侧推理（ONNX 优先，torch 兜底）
 - **V3**：Quick Install 白名单 + 错误解释器 + buildozer.spec 成品化
+- **V4**：横竖屏 / DPI / 电量 / 后台续跑 / 多 ABI
 
 ---
 
@@ -43,6 +44,16 @@
 | `v3test.py` | V3 自检：白名单 11 项 + 诊断 14 项 + 2 项集成 |
 | `samples/07_diag_demo.py` | 诊断 + 白名单演示 |
 | `alltest.py` | 一键跑四套自检 |
+
+**V4（新增）**
+
+| 文件 | 作用 |
+|---|---|
+| `screen.py` | 屏幕自适应：按 dp 宽度分档 + 横竖屏布局参数（纯函数，可无头测） |
+| `device.py` | 设备探测：电量 / ABI / 内存 / 建议线程数（读不到就说读不到，不编数字） |
+| `jobs.py` | 后台长任务：进度原子落盘、被杀续跑、按电量节流、前台服务指路 |
+| `v4test.py` | V4 自检：布局 11 项 + 设备 13 项 + 任务 12 项 |
+| `samples/08_device_jobs.py` | 设备体检 + 布局演算 + 模拟"被杀后续跑" |
 
 ## 2. 安装命令
 
@@ -96,7 +107,28 @@ print(m.predict_image("cat.jpg", topk=3))    # -> [(类别下标, 概率), ...]
 
 正常输出不会误报（`diag.explain("OK")` 返回空）。
 
-## 6. 打包 APK
+## 6. V4：横竖屏 / 电量 / 后台 / 多 ABI
+
+**横竖屏 / DPI**：`screen.layout_for(px宽, px高, dpi)` 返回布局参数，旋屏时 `on_resize` 重算。
+按 **dp** 而不是像素分档 —— 否则高 DPI 机器（1080px@440dpi = 393dp）会被误判成平板。
+横屏时文件树收窄到 22%、输出面板加高。buildozer 里 `orientation = sensor`。
+
+**电量 / 性能**：`device.report()` 给出电量、ABI、内存、建议线程数。
+电量 ≤15% 提示别跑长任务并加大块间间隔；读不到电量时如实返回 None，按常规处理，不当成"没电"。
+端侧推理固定 1-2 线程 —— batch=1 的小模型开多核收益极小，反而更费电、更容易触发温控降频。
+
+**后台续跑（重点）**：Android 会杀后台进程，Python 侧阻止不了。
+正解是 `jobs.JobManager`：每步进度**原子落盘**（写 tmp 再 replace，被杀不会留半个文件），
+下次启动 `resumable()` 列出未完成任务，从断点继续，不从 0 重跑。
+`chunked_range()` 分块推进并让出 CPU。
+
+**前台服务**：需要 Java 层 + `FOREGROUND_SERVICE` 权限 + pyjnius。`jobs.start_foreground()`
+在没有 pyjnius 时明确告知缺什么，**不静默失败** —— 进度落盘已经保证被杀可续跑。
+
+**多 ABI**：默认只出 `arm64-v8a`（包体最小、性能最好）。双 ABI 代价写进 spec 注释了：
+包体接近翻倍、部分 wheel 的 v7a 版本不好找。建议先用单 ABI 验证通路。
+
+## 7. 打包 APK
 
 ```bash
 pip install buildozer cython
@@ -110,7 +142,7 @@ adb install -r bin/*.apk
 - onnxruntime 打进 APK 需要 p4a recipe；没有就走 .ptl / .pte 的 Java 路线。
 - 只出 `arm64-v8a`；不申请存储权限，全部写应用私有目录。
 
-## 7. 手机验证步骤
+## 8. 手机验证步骤
 
 1. **最快（不打包）**：Pydroid 3 打开 `main.py`，看三栏、点示例运行。
 2. **触屏**：跑 `samples/02_pygame_touch.py`，点中间按钮计数 +1、右上角 EXIT 退出。
@@ -118,13 +150,15 @@ adb install -r bin/*.apk
 4. **诊断**：跑 `samples/07_diag_demo.py`，看报错如何被翻译成可执行建议。
 5. **装包面板**：点工具条「📦」，红档包点 Install 会先打印警告与替代方案。
 6. **APK**：装包后跑 `01_numpy_demo.py` 看 MFLOPS；崩了 `adb logcat | grep python`。
-7. 把 `alltest.py` 拷到手机（Pydroid）跑一遍，四套应全 OK。
+7. **旋屏**：转屏后三栏比例应自动变化（横屏文件树变窄、输出变高），不错位。
+8. **续跑**：跑 `samples/08_device_jobs.py`，看"模拟被杀后重启"能否从 60% 续到 100%。
+9. 把 `alltest.py` 拷到手机（Pydroid）跑一遍，五套应全 OK。
 
-## 8. 已知限制 / 失败回滚
+## 9. 已知限制 / 失败回滚
 
 - **无 root 不做的事**：不写 /system、不 sudo、不 apt。读写限制在应用私有目录，跨应用文件走 SAF（V4）。
 - **pygame recipe 编不过**：从 requirements 摘掉，示例只在 Pydroid / 桌面跑，别为它上全量 gcc。
 - **torch 不打包**：先在 PC 转 .onnx 或 .ptl。
-- **回滚**：`git checkout mvp` / `v0.2.0` / `v0.3.0`；打包脏了 `buildozer android clean`，再不行删 `.buildozer`。
+- **回滚**：`git checkout mvp` / `v0.2.0` / `v0.3.0` / `v0.4.0`；打包脏了 `buildozer android clean`，再不行删 `.buildozer`。
 
-当前自检：`alltest.py` 四套全 OK（uitest 8 项、v3test 27 项、aitest 11 项、7 个示例）。
+当前自检：`alltest.py` 五套全 OK（uitest 8 项、v3test 27 项、v4test 36 项、aitest 11 项、8 个示例）。
