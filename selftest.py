@@ -18,7 +18,7 @@ from runner import ScriptRunner, python_exe  # noqa: E402
 
 SCRIPTS = ["01_numpy_demo.py", "03_pil_thumb.py", "04_env_probe.py"]
 AI_SCRIPTS = ["05_ai_image.py", "06_ai_feature.py"]   # 缺 onnxruntime 时记 SKIP，不算失败
-V3_SCRIPTS = ["07_diag_demo.py"]
+V3_SCRIPTS = ["07_diag_demo.py", "08_device_jobs.py"]
 GUI_SCRIPT = "02_pygame_touch.py"
 TIMEOUT = 60
 SKIPPED = []
