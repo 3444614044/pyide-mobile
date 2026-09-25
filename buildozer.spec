@@ -9,7 +9,7 @@
 [app]
 title = PyIDE Mobile
 package.name = pyidemobile
-package.domain = org.tinypyide
+package.domain = org.tinyide
 
 source.dir = .
 source.include_exts = py,png,jpg,kv,atlas,json,md,ttf
@@ -47,7 +47,7 @@ requirements = python3,kivy,numpy,Pillow
 # ---------------------------------------------------------------- V4：横竖屏
 # sensor = 跟随系统旋屏。注意：旋屏会重建窗口，布局必须按 dp 比例算，
 # 本项目用 screen.layout_for() 在 on_resize 里重算，不写死像素。
-orientation = all
+orientation = sensor
 # 只锁竖屏就改回 portrait；游戏类示例建议 portrait，编辑器建议 sensor。
 
 fullscreen = 0
@@ -88,4 +88,3 @@ warn_on_root = 1
 # 构建脏了的处理顺序：
 #   buildozer android clean      # 先试这个
 #   rm -rf .buildozer            # 还不行就删缓存（下次全量重编，慢但干净）
-android.accept_sdk_license = True
