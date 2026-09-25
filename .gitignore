@@ -1,0 +1,26 @@
+# 构建产物
+.buildozer/
+bin/
+*.apk
+*.aab
+.gradle/
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# 本项目运行期产物（模型/缓存不下库）
+models/
+*.pt
+*.ptl
+*.onnx
+*.pte
+*.tflite
+_thumb_*.jpg
+
+# 编辑器/系统
+.idea/
+.vscode/
+.DS_Store
