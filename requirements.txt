@@ -1,0 +1,6 @@
+# 桌面调试用（手机上不要 pip install 这些，走 buildozer 打包）
+kivy==2.3.1
+pygments>=2.12        # 语法高亮，缺失时自动退回原生 TextInput
+numpy>=1.24
+Pillow>=9.0
+pygame>=2.5           # 仅示例与桌面调试；APK 打包视 p4a recipe 可用性决定
