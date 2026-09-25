@@ -8,7 +8,8 @@ import sys
 import os
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-SUITES = ["uitest.py", "v3test.py", "v4test.py", "aitest.py", "selftest.py"]
+SUITES = ["uitest.py", "v3test.py", "v4test.py", "aitest.py", "selftest.py",
+          "devicecheck.py"]   # devicecheck 产出真机报告，桌面也能跑
 
 
 def main():
